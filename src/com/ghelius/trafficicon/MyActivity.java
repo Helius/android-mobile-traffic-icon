@@ -8,12 +8,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.TrafficStats;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.telephony.TelephonyManager;
 import android.util.Log;
-import android.view.View;
 
 import java.util.Calendar;
 
@@ -27,12 +25,6 @@ public class MyActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-        findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, "Mobile Rx:" + TrafficStats.getMobileRxBytes());
-            }
-        });
 
         registerReceiver(new BroadcastReceiver() {
             public void onReceive(Context context, Intent intent) {
