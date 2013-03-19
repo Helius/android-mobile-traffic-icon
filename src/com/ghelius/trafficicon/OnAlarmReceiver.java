@@ -11,12 +11,19 @@ import android.util.Log;
 
 public class OnAlarmReceiver extends BroadcastReceiver {
     static final String TAG = "traffic-alarm-receiver";
+    static long prevRx = 0;
+    static long prevTx = 0;
+    static int globalRx = 0;
+    static int globalTx = 0;
+
     @Override
     public void onReceive(Context context, Intent intent) {
         //WakefulIntentService.sendWakefulWork(context, WatchService.class);
         Log.d(TAG,"Alarm received");
         if (intent.getExtras().getString("type").equals("reset")) {
             Log.d(TAG,"it's 'reset' alarm");
+            globalTx = 0;
+            globalRx = 0;
             //TODO: save traffic value
         } else if (intent.getExtras().getString("type").equals("update")) {
             Log.d(TAG,"it's 'update' alarm");
@@ -27,6 +34,19 @@ public class OnAlarmReceiver extends BroadcastReceiver {
 
 
     private void notifyConnect(Context context, long rx, long tx) {
+
+        if (prevRx == rx && prevTx == tx)
+            return;
+        if (prevRx < rx) {
+            Log.d(TAG,"rx diff: " + (rx-prevRx));
+            globalRx += rx-prevRx;
+        }
+        if (prevTx < tx) {
+            Log.d(TAG,"tx diff: " + (tx-prevTx));
+            globalTx += tx-prevTx;
+        }
+        prevRx = rx;
+        prevTx = tx;
 
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         Notification notification = new Notification();
@@ -48,31 +68,26 @@ public class OnAlarmReceiver extends BroadcastReceiver {
         notification.icon = resID;
         notification.tickerText = "";
         notification.flags = Notification.FLAG_ONGOING_EVENT | Notification.FLAG_AUTO_CANCEL | Notification.FLAG_ONLY_ALERT_ONCE;
-        long rxd = 0;
-        long txd = 0;
+        float rxf = rx;
+        float txf = tx;
         String units = "";
-        if (rx > 1024) {
+        if (rxf > 1024) {
             units = "KB";
-            rxd = rx%1024;
-            txd = tx%1024;
-            rx = rx/1024;
-            tx = tx/1024;
+            rxf = rxf/1024;
+            txf = txf/1024;
         }
-        if (rx > 1024) {
+        if (rxf > 1024) {
             units = "MB";
-            rxd = rx%1024;
-            txd = tx%1024;
-            rx = rx/1024;
-            tx = tx/1024;
+            rxf = rxf/1024;
+            txf = txf/1024;
         }
-        if (rx > 1024) {
+        if (rxf > 1024) {
             units = "GB";
-            rxd = rx%1024;
-            txd = tx%1024;
-            rx = rx/1024;
-            tx = tx/1024;
+            rxf = rxf/1024;
+            txf = txf/1024;
         }
-        notification.setLatestEventInfo(context, "Total traffic: " + (rx+tx) +"." + (rxd+txd) + " "+ units , "rx: " + rx +"." + rxd + " " + units + ", tx: " + tx + "." + txd +" " + units , pendIntent);
+        notification.setLatestEventInfo(context, "Total mobile traffic: " + String.format("%.2f",rxf+txf) +" "+ units ,
+                                                 "rx: " + String.format("%.2f",rxf) + " " + units + ", tx: " + String.format("%.2f",txf) +" " + units , pendIntent);
         notificationManager.notify(1, notification);
     }
 }

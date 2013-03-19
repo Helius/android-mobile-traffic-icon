@@ -61,14 +61,8 @@ public class MyActivity extends Activity {
     }
 
     @Override
-    public void onResume () {
-        super.onResume();
-    }
-
-    @Override
     public void onPause () {
         super.onPause();
-        checkConnection();
         scheduleResetAlarm();
     }
 
