@@ -13,8 +13,8 @@ public class OnAlarmReceiver extends BroadcastReceiver {
     static final String TAG = "traffic-alarm-receiver";
     static long prevRx = 0;
     static long prevTx = 0;
-    static int globalRx = 0;
-    static int globalTx = 0;
+    static long globalRx = 0;
+    static long globalTx = 0;
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -26,17 +26,15 @@ public class OnAlarmReceiver extends BroadcastReceiver {
             globalRx = 0;
             //TODO: save traffic value
         } else if (intent.getExtras().getString("type").equals("update")) {
-            Log.d(TAG,"it's 'update' alarm");
-            Log.d(TAG, "Mobile Rx:" + TrafficStats.getMobileRxBytes());
-            notifyConnect(context, TrafficStats.getMobileRxBytes(), TrafficStats.getMobileTxBytes());
+            Log.d(TAG, "it's 'update' alarm");
         }
+        notifyConnect(context, TrafficStats.getMobileRxBytes(), TrafficStats.getMobileTxBytes());
     }
 
 
     private void notifyConnect(Context context, long rx, long tx) {
+        Log.d(TAG,"context: rx:" + rx + ", tx:" + tx  + ", prevRx:" + prevRx + ", prevTx:" + prevTx + ", globalRx:" + globalRx + ", globalTx:" + globalTx);
 
-        if (prevRx == rx && prevTx == tx)
-            return;
         if (prevRx < rx) {
             Log.d(TAG,"rx diff: " + (rx-prevRx));
             globalRx += rx-prevRx;
@@ -55,7 +53,7 @@ public class OnAlarmReceiver extends BroadcastReceiver {
         PendingIntent pendIntent = PendingIntent.getActivity(context, 0,
                 intent, 0);
 
-        long totalMb = (rx+tx)/(1024*1024);
+        long totalMb = (globalRx+globalTx)/(1024*1024);
         if (totalMb > 100) {
             totalMb = 100;
         }
@@ -68,8 +66,8 @@ public class OnAlarmReceiver extends BroadcastReceiver {
         notification.icon = resID;
         notification.tickerText = "";
         notification.flags = Notification.FLAG_ONGOING_EVENT | Notification.FLAG_AUTO_CANCEL | Notification.FLAG_ONLY_ALERT_ONCE;
-        float rxf = rx;
-        float txf = tx;
+        float rxf = globalRx;
+        float txf = globalTx;
         String units = "";
         if (rxf > 1024) {
             units = "KB";

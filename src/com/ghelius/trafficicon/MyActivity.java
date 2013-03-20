@@ -100,5 +100,4 @@ public class MyActivity extends Activity {
         calendar.set(Calendar.SECOND, 59);
         am.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pi);
     }
-
 }
